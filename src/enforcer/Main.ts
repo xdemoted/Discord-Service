@@ -19,7 +19,7 @@ export class Main extends GenericBot {
     private webHandler: WebHandler;
 
     public constructor(mongoHandler: MongoHandler, webHandler: WebHandler, eventHandler: EventHandler, scope: Scope) {
-        super(Main.getBotInfo().token, "src/enforcer/commands", eventHandler);
+        super(Main.getBotInfo().token, "src/enforcer/commands", eventHandler, scope);
         this.mongo = mongoHandler;
         this.webHandler = webHandler;
 

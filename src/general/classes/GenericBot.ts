@@ -2,6 +2,7 @@ import { Client, Partials, REST, Routes } from "discord.js";
 import BaseCommand from "./BaseCommand";
 import fs from "fs";
 import EventHandler from "../handlers/EventHandler";
+import { Scope } from "src/container/Scope";
 
 export class GenericBot {
     public client: Client = new Client({ partials: [Partials.Message, Partials.Channel, Partials.Reaction, Partials.GuildMember, Partials.User], intents: 131071 });
@@ -12,7 +13,7 @@ export class GenericBot {
     public commandDirectory: string;
     public eventHandler?: EventHandler;
 
-    public constructor(token: string, commandDirectory: string, eventHandler: EventHandler) {
+    public constructor(token: string, commandDirectory: string, eventHandler: EventHandler, scope: Scope) {
         console.log(`Begin login for [${commandDirectory}]`);
         this.commandDirectory = commandDirectory;
         this.token = token;
@@ -22,8 +23,11 @@ export class GenericBot {
         this.client.on('ready', () => {
             console.log(`Logged in as ${this.client.user?.tag}`);
 
-            this.loadCommands();
-            this.registerCommands();
+            scope.awaitComplete().then(() => {
+                this.loadCommands(scope);
+                this.registerCommands();
+            });
+            
             eventHandler.startEventListeners(this);
         });
 
@@ -54,43 +58,8 @@ export class GenericBot {
         return this.client;
     }
 
-    loadDirectory(directory: string, level = 1) {
-        const debugPrefix = " -".repeat(level) + " ";
-
-        const files = fs.readdirSync(directory);
-
-        // Sort: files first, directories last
-        files.sort((a, b) => {
-            const aIsDir = !a.includes(".") && fs.statSync(`${directory}/${a}`).isDirectory();
-            const bIsDir = !b.includes(".") && fs.statSync(`${directory}/${b}`).isDirectory();
-            if (aIsDir === bIsDir) return 0;
-            return aIsDir ? 1 : -1;
-        });
-
-        files.forEach(file => {
-            console.log(debugPrefix + file);
-            if (!file.includes(".") && fs.statSync(`${directory}/${file}`).isDirectory()) {
-            this.loadDirectory(`${directory}/${file}`, level + 1);
-            return;
-            }
-
-            if (!(file.endsWith(".js") || file.endsWith(".ts"))) return;
-
-            let command = require(`${directory}/${file}`);
-
-            if (command instanceof BaseCommand) {
-                this.commands.push(command);
-
-                if (directory.includes("restricted")) {
-                    command.restricted = true;
-                }
-            }
-        });
-    }
-
-    loadCommands() {
-        console.log("Loading commands:");
-        this.loadDirectory(this.commandDirectory);
+    loadCommands(scope: Scope) {
+        scope.get(BaseCommand).forEach(command => this.commands.push(command));
     }
 
     registerCommands() {

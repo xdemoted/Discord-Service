@@ -5,6 +5,8 @@ import { Singleton } from "src/container/Singleton";
 
 @Singleton
 export class MenuBan extends BaseCommand {
+    public override restricted = true;
+
     public getCommand(): RESTPostAPIContextMenuApplicationCommandsJSONBody {
         return new ContextMenuCommandBuilder()
             .setName("ban")

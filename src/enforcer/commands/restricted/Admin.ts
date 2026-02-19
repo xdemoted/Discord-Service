@@ -9,6 +9,7 @@ import { Singleton } from "src/container/Singleton";
 
 @Singleton
 export class Admin extends BaseCommand {
+    public override restricted = true;
     private resetChoices = ["daily", "currency", "xp", "stats", "all"];
     private main: Main;
     private userHandler: UserHandler;

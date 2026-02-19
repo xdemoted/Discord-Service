@@ -5,6 +5,7 @@ import { Singleton } from "src/container/Singleton";
 
 @Singleton
 export class Kick extends BaseCommand {
+    public override restricted = true;
     public getCommand(): RESTPostAPIChatInputApplicationCommandsJSONBody {
         return new SlashCommandBuilder()
             .setName("kick")

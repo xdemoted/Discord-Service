@@ -5,6 +5,7 @@ import { Singleton } from "src/container/Singleton";
 
 @Singleton
 export class Timeout extends BaseCommand {
+    public override restricted = true;
     public getCommand(): RESTPostAPIChatInputApplicationCommandsJSONBody {
         return new SlashCommandBuilder()
             .setName("timeout")

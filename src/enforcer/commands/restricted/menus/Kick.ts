@@ -5,6 +5,7 @@ import { Singleton } from "src/container/Singleton";
 
 @Singleton
 export class Activity extends BaseCommand {
+    public override restricted = true;
     public getCommand(): RESTPostAPIContextMenuApplicationCommandsJSONBody {
         return new ContextMenuCommandBuilder()
             .setName("kick")
