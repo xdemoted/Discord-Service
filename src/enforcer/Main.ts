@@ -8,31 +8,28 @@ import path from "path";
 import { dir } from "console";
 import WebHandler from "./handlers/WebHandler";
 import {GenericBot} from "src/general/classes/GenericBot";
-import { MessageHandler } from "./handlers/MessageHandler";
+import { Singleton } from "src/container/Singleton";
+import { Scope } from "src/container/Scope";
 
-require('@dotenvx/dotenvx').config()
-
+@Singleton
 export class Main extends GenericBot {
-    static instance: Main;
     private messages = require("../resources/messages.json");
-    private mongo: MongoHandler = MongoHandler.getInstance();
 
-    public constructor() {
-        super(Main.getBotInfo().token, "src/enforcer/commands");
-        MongoHandler.getInstance();
+    private mongo: MongoHandler;
+    private webHandler: WebHandler;
+
+    public constructor(mongoHandler: MongoHandler, webHandler: WebHandler, eventHandler: EventHandler, scope: Scope) {
+        super(Main.getBotInfo().token, "src/enforcer/commands", eventHandler);
+        this.mongo = mongoHandler;
+        this.webHandler = webHandler;
 
         this.client.on('ready', () => {
-            this.startWebHandler();
-            MessageHandler.getInstance();
+            this.eventHandler?.startEventListeners(this);
         });
     }
 
     public static getBotInfo(): { token: string, debug: boolean } {
         return require("src/resources/botconfig.json").enforcer
-    }
-
-    startWebHandler(): void {
-        WebHandler.getInstance();
     }
 
     getRandom(key: string): string {
@@ -64,11 +61,6 @@ export class Main extends GenericBot {
         process.env.TOKEN = info.token;
         process.env.DEBUG = info.debug ? "true" : "false";
         return process.env as unknown as Env;
-    }
-
-    static override getInstance(): Main {
-        if (!Main.instance) return new Main();
-        return Main.instance;
     }
 }
 

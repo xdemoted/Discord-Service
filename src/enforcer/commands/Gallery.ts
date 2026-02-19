@@ -12,12 +12,23 @@ import { json } from "stream/consumers";
 import GeneralUtils from "src/general/utils/GeneralUtils";
 import HTMLUtils from "src/general/utils/HTMLUtils";
 import WebHandler from "../handlers/WebHandler";
+import { Singleton } from "src/container/Singleton";
 
-class Gallery extends BaseCommand {
-    static app = WebHandler.getInstance().getApp();
+@Singleton
+export class Gallery extends BaseCommand {
+    private webHandler: WebHandler;
+    private userHandler: UserHandler;
+    private mongoHandler: MongoHandler;
+    private app: express.Application;
 
-    constructor() {
+    constructor(webHandler: WebHandler, userHandler: UserHandler, mongoHandler: MongoHandler) {
         super();
+
+        this.webHandler = webHandler;
+        this.userHandler = userHandler;
+        this.mongoHandler = mongoHandler;
+
+        this.app = webHandler.getApp();
     }
 
     private card = `<div class="waifucard" style="background-image: url(imageURL); background-size: 100% 100%;"><div class="waifuDetails"><h2>rating</h2></div></div>`
@@ -34,7 +45,7 @@ class Gallery extends BaseCommand {
 
     public async execute(interaction: CommandInteraction): Promise<void> {
         const discordUser = interaction.options.get("user")?.user || interaction.user;
-        const user = await UserHandler.getInstance().getUser(discordUser.id);
+        const user = await this.userHandler.getUser(discordUser.id);
 
         const waifus = user.stats.waifus
 
@@ -43,7 +54,7 @@ class Gallery extends BaseCommand {
             return;
         }
 
-        const mongoWaifus: UserWaifu[] = (await Promise.all(waifus.map(async waifu => new UserWaifu(await MongoHandler.getInstance().getWaifu(waifu.id) as Waifu, waifu.rating))))
+        const mongoWaifus: UserWaifu[] = (await Promise.all(waifus.map(async waifu => new UserWaifu(await this.mongoHandler.getWaifu(waifu.id) as Waifu, waifu.rating))))
         .filter(waifu => waifu.waifu != null)
         .sort((a, b) => {
             return a.rating - b.rating
@@ -51,7 +62,7 @@ class Gallery extends BaseCommand {
 
         const htmlWaifus: HTMLWaifu[] = mongoWaifus.map(waifu => new HTMLWaifu(waifu.waifu.url, waifu.waifu.rating == Rating.SAFE ? "waifucard" : "waifucard explicit", waifu.rating == UserRating.MOMMY ? "Mommy" : waifu.rating == UserRating.SMASH ? "Smash" : waifu.rating == UserRating.PASS ? "Pass" : waifu.rating == UserRating.BODYBAG ? "Bodybag" : "Unknown"));
 
-        Gallery.app.get('/gallery/' + user.userID, (req, res) => {
+        this.app.get('/gallery/' + user.userID, (req, res) => {
             fs.readFile("./web/index.html", 'utf8', (err: any, data: string) => {
                 if (err) return res.status(500).send(err);
 
@@ -82,8 +93,6 @@ class Gallery extends BaseCommand {
         return;
     }
 }
-
-module.exports = new Gallery();
 
 class HTMLWaifu {
     imageURL: string;

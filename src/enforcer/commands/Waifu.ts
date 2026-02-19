@@ -6,8 +6,21 @@ import RandomWaifu from "../../general/classes/api/Waifu";
 import UserHandler from "../handlers/UserHandler";
 import { UserRating } from "../../general/classes/api/mongodb/User";
 import MongoHandler from "../handlers/MongoHandler";
+import { Singleton } from "src/container/Singleton";
 
-class Waifu extends BaseCommand {
+@Singleton
+export class Waifu extends BaseCommand {
+    private userHandler: UserHandler;
+    private mongoHandler: MongoHandler;
+    private main: Main;
+
+    public constructor(main: Main, userHandler: UserHandler, mongoHandler: MongoHandler) {
+        super();
+        this.userHandler = userHandler;
+        this.mongoHandler = mongoHandler;
+        this.main = main;
+    }
+
     private row = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder().setCustomId('mommy').setLabel('Mommy?').setStyle(ButtonStyle.Success),
         new ButtonBuilder().setCustomId('smash').setLabel('Smash').setStyle(ButtonStyle.Primary),
@@ -97,7 +110,7 @@ class Waifu extends BaseCommand {
 
             waifu = waifus[0];
 
-            MongoHandler.getInstance().updateWaifu(waifu);
+            this.mongoHandler.updateWaifu(waifu);
 
             embedBuilder.setImage(waifu.url);
             embedBuilder.setFooter({ text: `Rating: ${waifu.rating} | Tags: ${waifu.tags.join(", ")}` });
@@ -115,25 +128,25 @@ class Waifu extends BaseCommand {
             let userRating: UserRating;
             switch (i.customId) {
                 case "mommy":
-                    await i.reply(`**${i.user.displayName}** ` + Main.getInstance().getRandom("mommy") + " **(mommy)**");
+                    await i.reply(`**${i.user.displayName}** ` + this.main.getRandom("mommy") + " **(mommy)**");
                     userRating = UserRating.MOMMY;
                     break;
                 case "smash":
-                    await i.reply(`**${i.user.displayName}** ` + Main.getInstance().getRandom("smash") + " **(smash)**");
+                    await i.reply(`**${i.user.displayName}** ` + this.main.getRandom("smash") + " **(smash)**");
                     userRating = UserRating.SMASH;
                     break;
                 case "bodybag":
-                    await i.reply(`**${i.user.displayName}** ` + Main.getInstance().getRandom("bodybag") + " **(bodybag)**");
+                    await i.reply(`**${i.user.displayName}** ` + this.main.getRandom("bodybag") + " **(bodybag)**");
                     userRating = UserRating.BODYBAG;
                     break;
                 case "pass":
-                    await i.reply(`**${i.user.displayName}** ` + Main.getInstance().getRandom("pass") + " **(pass)**");
+                    await i.reply(`**${i.user.displayName}** ` + this.main.getRandom("pass") + " **(pass)**");
                     userRating = UserRating.PASS;
                     break;
             }
 
             if (waifu) {
-                UserHandler.getInstance().getUser(i.user.id).then(async (user) => {
+                this.userHandler.getUser(i.user.id).then(async (user) => {
                     user.addWaifu(waifu.id, userRating);
                     user.setLastUpdate();
                 })
@@ -142,5 +155,3 @@ class Waifu extends BaseCommand {
     }
 
 }
-
-module.exports = new Waifu();

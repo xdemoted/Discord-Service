@@ -5,8 +5,21 @@ import MongoHandler from "src/enforcer/handlers/MongoHandler";
 import UserHandler from "src/enforcer/handlers/UserHandler";
 import GeneralUtils from "src/general/utils/GeneralUtils";
 import { UserRating } from "src/general/classes/api/mongodb/User";
+import { Singleton } from "src/container/Singleton";
 
-class Pass extends BaseCommand {
+@Singleton
+export class Pass extends BaseCommand {
+    private main: Main;
+    private mongoHandler: MongoHandler;
+    private userHandler: UserHandler;
+
+    public constructor(main: Main, mongoHandler: MongoHandler, userHandler: UserHandler) {
+        super();
+        this.main = main;
+        this.mongoHandler = mongoHandler;
+        this.userHandler = userHandler;
+    }
+
     public override deferReply: boolean = false;
     public getCommand(): RESTPostAPIContextMenuApplicationCommandsJSONBody {
         return new ContextMenuCommandBuilder()
@@ -26,18 +39,18 @@ class Pass extends BaseCommand {
                 return;
             }
     
-            if (message.author.id === Main.getInstance().getClient().user?.id) {
+            if (message.author.id === this.main.getClient().user?.id) {
                 if (message.embeds.length == 1) {
                     let image = message.embeds[0].image?.url;
                     if (image) {
                         await interaction.deferReply({ephemeral: true});
-                        MongoHandler.getInstance().getWaifuFromURL(image).then(async waifu => {
+                        this.mongoHandler.getWaifuFromURL(image).then(async waifu => {
                             if (!waifu) {
                                 await interaction.editReply({ content: "Could not find waifu in database."});
                                 return;
                             }
     
-                            const user = await UserHandler.getInstance().getUser(interaction.user.id);
+                            const user = await this.userHandler.getUser(interaction.user.id);
                             GeneralUtils.setArray(user.stats.waifus, { id: waifu.id, rating: UserRating.PASS }, "id");
     
                             await interaction.editReply({ content: `Waifu has been put into your pass collection.`});
@@ -47,8 +60,6 @@ class Pass extends BaseCommand {
                 }
             }
     
-            await interaction.followUp({ content: `**${interaction.user.displayName}** ` + Main.getInstance().getRandom("pass") + " **(pass)**" });
+            await interaction.followUp({ content: `**${interaction.user.displayName}** ` + this.main.getRandom("pass") + " **(pass)**" });
         }
 }
-
-module.exports = new Pass();

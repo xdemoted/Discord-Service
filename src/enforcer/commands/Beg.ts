@@ -3,9 +3,17 @@ import BaseCommand from "../../general/classes/BaseCommand";
 import { Main } from "../Main";
 import UserHandler from "../handlers/UserHandler";
 import GeneralUtils from "src/general/utils/GeneralUtils";
+import { Singleton } from "src/container/Singleton";
 
-class Beg extends BaseCommand {
-    earnings: Map<string, number> = new Map();
+@Singleton
+export class Beg extends BaseCommand {
+    private earnings: Map<string, number> = new Map();
+    private userHandler: UserHandler;
+
+    public constructor(userHandler: UserHandler) {
+        super();
+        this.userHandler = userHandler;
+    }
 
     public getCommand(): RESTPostAPIChatInputApplicationCommandsJSONBody {
         return new SlashCommandBuilder()
@@ -17,7 +25,7 @@ class Beg extends BaseCommand {
     }
 
     public async execute(interaction: CommandInteraction): Promise<void> {
-        const user = await UserHandler.getInstance().getUser(interaction.user.id);
+        const user = await this.userHandler.getUser(interaction.user.id);
         const threshold = user.currency < 200 ? (3*Math.sin((Math.PI/200) * user.currency + Math.PI / 2))/8 + 0.375 : 0;
         if (Math.random() > threshold) {
             const embed = new EmbedBuilder()
@@ -60,5 +68,3 @@ class Beg extends BaseCommand {
         return;
     }
 }
-
-module.exports = new Beg();

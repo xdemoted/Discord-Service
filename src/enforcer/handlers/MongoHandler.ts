@@ -4,14 +4,15 @@ import * as discord from "discord.js";
 import Waifu from "../../general/classes/api/Waifu";
 import { Main } from "../Main";
 import MongoConnector from "src/general/handlers/MongoConnector";
+import { Singleton } from "src/container/Singleton";
 
+@Singleton
 export default class MongoHandler {
-    private static instance: MongoHandler;
     private collections: { [key: string]: Collection } = {};
     private db: Db | undefined;
 
-    private constructor() {
-        const db = MongoConnector.getInstance().getDatabase().onComplete((db: Db) => {
+    public constructor(mongoConnector: MongoConnector) {
+        const db = mongoConnector.getDatabase().onComplete((db: Db) => {
             this.db = db;
 
             if (db) {
@@ -103,12 +104,5 @@ export default class MongoHandler {
                 console.error("Error saving user:", error);
             });
         }
-    }
-
-    public static getInstance(): MongoHandler {
-        if (!MongoHandler.instance) {
-            MongoHandler.instance = new MongoHandler();
-        }
-        return MongoHandler.instance;
     }
 }

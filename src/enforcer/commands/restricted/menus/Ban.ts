@@ -1,8 +1,10 @@
 import { ApplicationIntegrationType, InteractionContextType, RESTPostAPIChatInputApplicationCommandsJSONBody, SlashCommandBuilder, CommandInteraction, GuildMember, EmbedBuilder, ContextMenuCommandBuilder, ApplicationCommandType, RESTPostAPIContextMenuApplicationCommandsJSONBody, ContextMenuCommandInteraction } from "discord.js";
 import BaseCommand from "src/general/classes/BaseCommand";
 import { Main } from "src/enforcer/Main";
+import { Singleton } from "src/container/Singleton";
 
-class Activity extends BaseCommand {
+@Singleton
+export class MenuBan extends BaseCommand {
     public getCommand(): RESTPostAPIContextMenuApplicationCommandsJSONBody {
         return new ContextMenuCommandBuilder()
             .setName("ban")
@@ -52,5 +54,3 @@ class Activity extends BaseCommand {
         return;
     }
 }
-
-module.exports = new Activity();

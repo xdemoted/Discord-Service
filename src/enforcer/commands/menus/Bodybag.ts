@@ -5,8 +5,21 @@ import UserHandler from "src/enforcer/handlers/UserHandler";
 import MongoHandler from "src/enforcer/handlers/MongoHandler";
 import { UserRating, WaifuRating } from "src/general/classes/api/mongodb/User";
 import GeneralUtils from "src/general/utils/GeneralUtils";
+import { Singleton } from "src/container/Singleton";
 
-class Bodybag extends BaseCommand {
+@Singleton
+export class Bodybag extends BaseCommand {
+    private main: Main;
+    private mongoHandler: MongoHandler;
+    private userHandler: UserHandler;
+
+    public constructor(main: Main, mongoHandler: MongoHandler, userHandler: UserHandler) {
+        super();
+        this.main = main;
+        this.mongoHandler = mongoHandler;
+        this.userHandler = userHandler;
+    }
+
     public override deferReply: boolean = false;
 
     public getCommand(): RESTPostAPIContextMenuApplicationCommandsJSONBody {
@@ -18,8 +31,8 @@ class Bodybag extends BaseCommand {
             .toJSON();
     }
 
-public async execute(interaction: ContextMenuCommandInteraction): Promise<void> {
-                const messageID = interaction.targetId;
+    public async execute(interaction: ContextMenuCommandInteraction): Promise<void> {
+        const messageID = interaction.targetId;
         const message = await interaction.channel?.messages.fetch(messageID);
 
         if (!message) {
@@ -27,29 +40,27 @@ public async execute(interaction: ContextMenuCommandInteraction): Promise<void> 
             return;
         }
 
-        if (message.author.id === Main.getInstance().getClient().user?.id) {
+        if (message.author.id === this.main.getClient().user?.id) {
             if (message.embeds.length == 1) {
                 let image = message.embeds[0].image?.url;
                 if (image) {
-                    await interaction.deferReply({ephemeral: true});
-                    MongoHandler.getInstance().getWaifuFromURL(image).then(async waifu => {
+                    await interaction.deferReply({ ephemeral: true });
+                    this.mongoHandler.getWaifuFromURL(image).then(async waifu => {
                         if (!waifu) {
-                            await interaction.editReply({ content: "Could not find waifu in database."});
+                            await interaction.editReply({ content: "Could not find waifu in database." });
                             return;
                         }
 
-                        const user = await UserHandler.getInstance().getUser(interaction.user.id);
+                        const user = await this.userHandler.getUser(interaction.user.id);
                         GeneralUtils.setArray(user.stats.waifus, { id: waifu.id, rating: UserRating.BODYBAG }, "id");
 
-                        await interaction.editReply({ content: `Waifu has been put into your bodybag collection.`});
+                        await interaction.editReply({ content: `Waifu has been put into your bodybag collection.` });
                         return;
                     });
                 }
             }
         }
 
-        await interaction.followUp({ content: `**${interaction.user.displayName}** ` + Main.getInstance().getRandom("bodybag") + " **(bodybag)**" });
+        await interaction.followUp({ content: `**${interaction.user.displayName}** ` + this.main.getRandom("bodybag") + " **(bodybag)**" });
     }
 }
-
-module.exports = new Bodybag();

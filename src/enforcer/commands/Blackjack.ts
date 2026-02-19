@@ -5,10 +5,16 @@ import WaifuRandom from "../../general/classes/api/Waifu";
 import UserHandler from "../handlers/UserHandler";
 import GeneralUtils from "src/general/utils/GeneralUtils";
 import axios from "axios";
+import { Singleton } from "src/container/Singleton";
 
-class Flip extends BaseCommand {
-    private tailsURL = "https://files.catbox.moe/mfnic9.gif"
-    private headsURL = "https://files.catbox.moe/ev0osf.gif";
+@Singleton
+export class Blackjack extends BaseCommand {
+    private userHandler: UserHandler;
+
+    public constructor(userHandler: UserHandler) {
+        super();
+        this.userHandler = userHandler;
+    }
 
     public override deferReply: boolean = false;
 
@@ -30,7 +36,7 @@ class Flip extends BaseCommand {
     public async execute(interaction: CommandInteraction): Promise<void> {
         let ended = false;
         const bet = interaction.options.get("amount")?.value as number;
-        const user = await UserHandler.getInstance().getUser(interaction.user.id);
+        const user = await this.userHandler.getUser(interaction.user.id);
 
         if (bet > user.getCurrency()) {
             await interaction.reply({ content: "You don't have enough gems to gamble that amount.", flags: MessageFlags.Ephemeral });
@@ -209,5 +215,3 @@ class Flip extends BaseCommand {
         return array.map(card => this.getCardName(card)).join(", ");
     }
 }
-
-module.exports = new Flip();

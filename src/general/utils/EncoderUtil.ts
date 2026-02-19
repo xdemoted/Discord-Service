@@ -19,15 +19,3 @@ class Encoder {
 }
 
 export { Encoder }
-
-const output = Encoder.binaryFlagsEncode([true, false, true, false, false, true, true, false])
-console.log(output)
-
-console.log(Encoder.binaryFlagsDecode(output))
-
-let bool = []
-
-for (let i = 0; i < 24; i++) {
-    bool.push(true)
-}
-console.log(Encoder.binaryFlagsEncode(bool))

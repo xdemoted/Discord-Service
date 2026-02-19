@@ -1,11 +1,12 @@
 import { Collection, Db, MongoClient, WithId } from "mongodb";
 import { CompleteableFuture } from "../futures/CompletableFuture";
+import { Singleton } from "src/container/Singleton";
 
+@Singleton
 export default class MongoConnector {
-    private static instance: MongoConnector;
     private database: CompleteableFuture<Db>;
 
-    private constructor() {
+    public constructor() {
         this.connect()
         this.database = new CompleteableFuture<Db>();
     }
@@ -35,13 +36,6 @@ export default class MongoConnector {
             await client.close();
             process.exit(0);
         });
-    }
-
-    public static getInstance(): MongoConnector {
-        if (!MongoConnector.instance) {
-            MongoConnector.instance = new MongoConnector();
-        }
-        return MongoConnector.instance;
     }
 
     public getDatabase(): CompleteableFuture<Db> {

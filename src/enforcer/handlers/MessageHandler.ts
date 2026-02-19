@@ -1,11 +1,12 @@
+import { Singleton } from "src/container/Singleton";
 import { Main } from "../Main";
 
-export class MessageHandler {
-    private static instance: MessageHandler;
-    private main: Main = Main.getInstance();
+@Singleton
+export default class MessageHandler {
+    private main: Main
 
-    constructor() {
-        //this.startMessageEnforcement();
+    public constructor(main:Main) {
+        this.main = main;
     }
 
     public startMessageEnforcement() {
@@ -19,12 +20,5 @@ export class MessageHandler {
                 });
             }
         })
-    }
-
-    public static getInstance(): MessageHandler {
-        if (!MessageHandler.instance) {
-            MessageHandler.instance = new MessageHandler();
-        }
-        return MessageHandler.instance;
     }
 }

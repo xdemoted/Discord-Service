@@ -1,11 +1,12 @@
 import { Message, MessageFlags } from "discord.js";
+import { Singleton } from "src/container/Singleton";
 import {GenericBot} from "src/general/classes/GenericBot";
 
+@Singleton
 export default class EventHandler {
-
-    constructor(main: GenericBot) {
-        this.startMessageListener(main);
+    startEventListeners(main: GenericBot) {
         this.startCommandListener(main);
+        this.startMessageListener(main);
     }
 
     startCommandListener(main: GenericBot) {
@@ -31,7 +32,7 @@ export default class EventHandler {
 
                     command.execute(interaction);
 
-                    /* TODO Reenable XP system
+                    /* #TODO Reenable XP system
                     UserHandler.getInstance().getUser(interaction.user.id).then(user => {
                         UserHandler.getInstance().giveInteractXP(interaction,user);
                         user.stats.commandsSent += 1;

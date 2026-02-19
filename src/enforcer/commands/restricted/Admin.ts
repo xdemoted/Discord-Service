@@ -5,9 +5,19 @@ import UserHandler from "../../handlers/UserHandler";
 import { Operator } from "../../../general/classes/Operator";
 import User, { stats } from "../../../general/classes/api/mongodb/User";
 import ActiveUser from "../../../general/classes/api/mongodb/ActiveUser";
+import { Singleton } from "src/container/Singleton";
 
-class Admin extends BaseCommand {
+@Singleton
+export class Admin extends BaseCommand {
     private resetChoices = ["daily", "currency", "xp", "stats", "all"];
+    private main: Main;
+    private userHandler: UserHandler;
+
+    public constructor(main: Main, userHandler: UserHandler) {
+        super();
+        this.main = main;
+        this.userHandler = userHandler;
+    }
 
     public getCommand(): RESTPostAPIChatInputApplicationCommandsJSONBody {
         return new SlashCommandBuilder()
@@ -157,7 +167,7 @@ class Admin extends BaseCommand {
             return;
         }
 
-        UserHandler.getInstance().getUser(discordUser.id).then(user => {
+        this.userHandler.getUser(discordUser.id).then(user => {
             if (!user) {
                 interaction.editReply({ content: "User not found." });
                 return;
@@ -184,12 +194,12 @@ class Admin extends BaseCommand {
     }
 
     public resetData(interaction: CommandInteraction): void {
-        const main = Main.getInstance();
+        const main = this.main;
         let options: (CommandInteractionOption | null)[] = [interaction.options.get("data"), interaction.options.get("user")];
         let data = options[0]?.value as string;
         let user: DiscordUser | null = options[1]?.user || interaction.user;
 
-        UserHandler.getInstance().getUser(user.id).then(async (userData) => {
+        this.userHandler.getUser(user.id).then(async (userData) => {
             switch (data) {
                 case "daily":
                     userData.stats.lastDaily = 0;
@@ -222,12 +232,12 @@ class Admin extends BaseCommand {
     public manageLockdown(interaction: CommandInteraction, subcommand: string): void {
         switch (subcommand) {
             case "toggle":
-                Main.getInstance().toggleLockdown();
+                this.main.toggleLockdown();
 
-                interaction.editReply({ content: `Lockdown mode is now \`${Main.getInstance().getLockdown() ? "enabled" : "disabled"}.\`` });
+                interaction.editReply({ content: `Lockdown mode is now \`${this.main.getLockdown() ? "enabled" : "disabled"}.\`` });
                 break;
             case "status":
-                interaction.editReply({ content: `Lockdown mode is currently \`${Main.getInstance().getLockdown() ? "enabled" : "disabled"}.\`` });
+                interaction.editReply({ content: `Lockdown mode is currently \`${this.main.getLockdown() ? "enabled" : "disabled"}.\`` });
                 break;
             case "adduser": {
                 const user = interaction.options.get("user")?.user;
@@ -237,13 +247,13 @@ class Admin extends BaseCommand {
                     return;
                 }
 
-                if (Main.getInstance().getAllowedUsers().includes(user.id)) {
+                if (this.main.getAllowedUsers().includes(user.id)) {
                     interaction.editReply({ content: `User \`${user.username}\` already has bot access.` });
                     return;
                 }
 
                 interaction.editReply({ content: `User \`${user.username}\` now has bot access.` });
-                Main.getInstance().addAllowedUser(user.id);
+                this.main.addAllowedUser(user.id);
             }
                 break;
             case "removeuser": {
@@ -254,9 +264,9 @@ class Admin extends BaseCommand {
                     return;
                 }
 
-                if (Main.getInstance().getAllowedUsers().includes(user.id)) {
+                if (this.main.getAllowedUsers().includes(user.id)) {
                     interaction.editReply({ content: `User \`${user.username}\` no longer has bot access.` });
-                    Main.getInstance().removeAllowedUser(user.id);
+                    this.main.removeAllowedUser(user.id);
                     return;
                 }
 
@@ -266,5 +276,3 @@ class Admin extends BaseCommand {
         }
     }
 }
-
-module.exports = new Admin();

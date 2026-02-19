@@ -11,7 +11,7 @@ export class CompleteableFuture<T> {
         this.listeners.push(listener);
     }
 
-    public complete(value: T): void {
+    public async complete(value: T): Promise<void> {
         for (const listener of this.listeners) {
             listener(value);
         }

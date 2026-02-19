@@ -5,8 +5,16 @@ import WaifuRandom from "../../general/classes/api/Waifu";
 import GeneralUtils, { Time } from "src/general/utils/GeneralUtils";
 import UserHandler from "../handlers/UserHandler";
 import ActiveUser from "../../general/classes/api/mongodb/ActiveUser";
+import { Singleton } from "src/container/Singleton";
 
-class Daily extends BaseCommand {
+@Singleton
+export class Daily extends BaseCommand {
+    private userHandler: UserHandler;
+
+    public constructor(userHandler: UserHandler) {
+        super();
+        this.userHandler = userHandler;
+    }
 
     public getCommand(): RESTPostAPIChatInputApplicationCommandsJSONBody {
         return new SlashCommandBuilder()
@@ -18,7 +26,7 @@ class Daily extends BaseCommand {
     }
 
     public async execute(interaction: CommandInteraction): Promise<void> {
-        const user = await UserHandler.getInstance().getUser(interaction.user.id);
+        const user = await this.userHandler.getUser(interaction.user.id);
 
         let timeLeft = Time.timeLeft(user.stats.lastDaily + 18 * Time.HOUR);
 
@@ -65,5 +73,3 @@ class Daily extends BaseCommand {
         interaction.editReply({ embeds: [embed] });
     }
 }
-
-module.exports = new Daily();

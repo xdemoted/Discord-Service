@@ -148,7 +148,3 @@ class TextTag extends BaseTag {
         console.log(`${padding}{ name: ${this.name}, index: ${this.index}, content: ${this.content} }`)
     }
 }
-
-console.log(new FormManager().parseFormData(fs.readFileSync("C:/Users/risin/OneDrive/Documents/GitHub/EnforcerRewrite2/src/resources/testform.html").toString())?.print());
-
-console.log("done");

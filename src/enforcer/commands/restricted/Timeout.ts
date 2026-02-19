@@ -1,8 +1,10 @@
 import { ApplicationIntegrationType, InteractionContextType, RESTPostAPIChatInputApplicationCommandsJSONBody, SlashCommandBuilder, CommandInteraction, GuildMember, EmbedBuilder } from "discord.js";
 import BaseCommand from "src/general/classes/BaseCommand";
 import { Main } from "src/enforcer/Main";
+import { Singleton } from "src/container/Singleton";
 
-class Activity extends BaseCommand {
+@Singleton
+export class Timeout extends BaseCommand {
     public getCommand(): RESTPostAPIChatInputApplicationCommandsJSONBody {
         return new SlashCommandBuilder()
             .setName("timeout")
@@ -58,7 +60,7 @@ class Activity extends BaseCommand {
         }
 
         const reason = interaction.options.get("reason")?.value as string;
-
+        // #TODO implement actual timeout instead of ban
         await member.ban({ reason: `Timeout by ${interaction.user.tag} for reason: ${reason}` });
 
         const embed = new EmbedBuilder()
@@ -92,5 +94,3 @@ class Activity extends BaseCommand {
         }
     }
 }
-
-module.exports = new Activity();

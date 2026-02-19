@@ -1,17 +1,22 @@
-import { BaseInteraction, Interaction, Message } from "discord.js";
+import { BaseInteraction, Interaction, Message, User } from "discord.js";
 import ActiveUser from "src/general/classes/api/mongodb/ActiveUser";
 import { Main } from "../Main";
 import GeneralUtils from "src/general/utils/GeneralUtils";
 import MongoHandler from "./MongoHandler";
+import { Singleton } from "src/container/Singleton";
 
+@Singleton
 export default class UserHandler {
-    private static instance: UserHandler;
+    private main: Main;
+    private mongoHandler: MongoHandler;
     private users: Map<string, ActiveUser> = new Map();
     private userPromises: Map<string, Promise<ActiveUser>> = new Map();
 
-    constructor() {
-        this.startUserSaveInterval();
+    public constructor(main: Main, mongoHandler: MongoHandler) {
+        this.main = main;
+        this.mongoHandler = mongoHandler;
     }
+
 
     async getUser(userID: string): Promise<ActiveUser> {
         if (this.users.has(userID)) {
@@ -22,8 +27,8 @@ export default class UserHandler {
         }
         const userPromise = (async () => {
             try {
-                const user_1 = await Main.getInstance().getClient().users.fetch(userID);
-                const userData = await MongoHandler.getInstance().getUser(user_1);
+                const user_1 = await this.main.getClient().users.fetch(userID);
+                const userData = await this.mongoHandler.getUser(user_1);
                 const activeUser = ActiveUser.fromUser(userData);
                 this.users.set(userID, activeUser);
                 return activeUser;
@@ -73,19 +78,12 @@ export default class UserHandler {
     startUserSaveInterval(): void {
         setInterval(() => {
             this.users.forEach((user, userID) => {
-                MongoHandler.getInstance().saveUser(user);
+                this.mongoHandler.saveUser(user);
 
                 if (GeneralUtils.timeSince(user.lastUpdated) > 600000) { // Delete users not updated in the last 10 minutes
                     this.users.delete(userID);
                 }
             });
         }, Main.getVariables().DEBUG ? Main.getVariables().DEBUG_SAVE_CD : 300000); // Save every 5 minutes
-    }
-
-    public static getInstance(): UserHandler {
-        if (!UserHandler.instance) {
-            UserHandler.instance = new UserHandler();
-        }
-        return UserHandler.instance;
     }
 }

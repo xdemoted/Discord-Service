@@ -1,8 +1,10 @@
 import { ApplicationIntegrationType, InteractionContextType, RESTPostAPIChatInputApplicationCommandsJSONBody, SlashCommandBuilder, CommandInteraction, GuildMember, EmbedBuilder, VoiceChannel } from "discord.js";
 import BaseCommand from "src/general/classes/BaseCommand";
 import { Main } from "src/enforcer/Main";
+import { Singleton } from "src/container/Singleton";
 
-class Activity extends BaseCommand {
+@Singleton
+export class Move extends BaseCommand {
     public getCommand(): RESTPostAPIChatInputApplicationCommandsJSONBody {
         return new SlashCommandBuilder()
             .setName("move")
@@ -51,5 +53,3 @@ class Activity extends BaseCommand {
         }
     }
 }
-
-module.exports = new Activity();

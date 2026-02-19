@@ -3,9 +3,13 @@ import ChatMessage from "src/general/classes/api/redis/ChatMessage";
 import { createCanvas, loadImage } from "canvas";
 import { BaseMessage } from "src/general/classes/api/redis/BaseMessage";
 import { FilterService } from "src/general/filter/FilterService";
+import { Singleton } from "src/container/Singleton";
 
+@Singleton
 export default class ServerChannelHandler {
-    private static getWebhook():WebhookClient {
+    constructor(private filterService: FilterService) {}
+
+    private getWebhook():WebhookClient {
         const url: string = process.env.WEBHOOK_URL || "";
 
         if (url === "") {
@@ -17,7 +21,7 @@ export default class ServerChannelHandler {
         return new WebhookClient({url: url});
     }
 
-    public static getAvatarImage(name: string): string {
+    public getAvatarImage(name: string): string {
         const avatarUrl = process.env.AVATAR_API ? process.env.AVATAR_API.replace("{name}", name) : null;
 
         if (!avatarUrl) 
@@ -26,18 +30,18 @@ export default class ServerChannelHandler {
         return avatarUrl;
     }
 
-    public static relayChatMessage(message:ChatMessage): void {
+    public relayChatMessage(message:ChatMessage): void {
         this.sendMessage(message.data, message.name, this.getAvatarImage(message.name));
     }
 
-    public static relaySystemMessage(message: BaseMessage): void {
+    public relaySystemMessage(message: BaseMessage): void {
         
     }
 
-    public static sendMessage(content: string, username:string, avatarURL:string): void {
+    public sendMessage(content: string, username:string, avatarURL:string): void {
         const webhook = this.getWebhook();
 
-        content = FilterService.getInstance().applyDiscordFilter(content);
+        content = this.filterService.applyDiscordFilter(content);
 
         webhook.send({
             content: content,

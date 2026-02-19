@@ -1,13 +1,14 @@
 import express from "express";
 import { Main } from "../Main";
 import { set } from "@dotenvx/dotenvx";
+import { Singleton } from "src/container/Singleton";
 
-class WebHandler {
-    private static instance: WebHandler;
+@Singleton
+export default class WebHandler {
     public app = express();
 
     constructor() {
-        this.app.listen(Main.getVariables().APP_PORT || 25551);
+        //this.app.listen(Main.getVariables().APP_PORT || 25551);
         this.app.use(express.static("src/enforcer/web/assets/"));
         this.loadMainPage();
     }
@@ -21,13 +22,4 @@ class WebHandler {
     public getApp(): express.Application {
         return this.app;
     }
-
-    static getInstance(): WebHandler {
-        if (!WebHandler.instance) {
-            WebHandler.instance = new WebHandler();
-        }
-        return WebHandler.instance;
-    }
 }
-
-export default WebHandler;

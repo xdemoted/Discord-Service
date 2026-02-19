@@ -2,8 +2,16 @@ import { ApplicationIntegrationType, InteractionContextType, RESTPostAPIChatInpu
 import BaseCommand from "../../general/classes/BaseCommand";
 import { Main } from "../Main";
 import UserHandler from "../handlers/UserHandler";
+import { Singleton } from "src/container/Singleton";
 
-class Stats extends BaseCommand {
+@Singleton
+export class Balance extends BaseCommand {
+    private userHandler: UserHandler;
+
+    constructor(userHandler: UserHandler) {
+        super();
+        this.userHandler = userHandler;
+    }
 
     public getCommand(): RESTPostAPIChatInputApplicationCommandsJSONBody {
         return new SlashCommandBuilder()
@@ -15,7 +23,7 @@ class Stats extends BaseCommand {
     }
 
     public async execute(interaction: CommandInteraction): Promise<void> {
-        const user = await UserHandler.getInstance().getUser(interaction.user.id);
+        const user = await this.userHandler.getUser(interaction.user.id);
         if (user.currency <= 0) {
             await interaction.editReply({ content: "You're too poor for this command. <a:gem:1396788024934662144>" });
             return;
@@ -24,5 +32,3 @@ class Stats extends BaseCommand {
         return;
     }
 }
-
-module.exports = new Stats();

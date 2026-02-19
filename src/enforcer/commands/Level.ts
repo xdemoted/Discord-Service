@@ -5,8 +5,16 @@ import UserHandler from "../handlers/UserHandler";
 import nodeHtmlToImage from "node-html-to-image";
 import fs from "fs";
 import GeneralUtils from "src/general/utils/GeneralUtils";
+import { Singleton } from "src/container/Singleton";
 
-class Level extends BaseCommand {
+@Singleton
+export class Level extends BaseCommand {
+    private userHandler: UserHandler;
+
+    public constructor(userHandler: UserHandler) {
+        super();
+        this.userHandler = userHandler;
+    }
 
     public getCommand(): RESTPostAPIChatInputApplicationCommandsJSONBody {
         return new SlashCommandBuilder()
@@ -18,10 +26,10 @@ class Level extends BaseCommand {
     }
 
     public async execute(interaction: CommandInteraction): Promise<void> {
-        const user = await UserHandler.getInstance().getUser(interaction.user.id);
+        const user = await this.userHandler.getUser(interaction.user.id);
         const discordUser = interaction.user;
         let levelCard = await nodeHtmlToImage({
-          html: fs.readFileSync('./web/level.html', 'utf8'),
+          html: fs.readFileSync('src/enforcer/web/level.html', 'utf8'),
           selector: 'body > div',
           content: {
             username: discordUser.displayName,
@@ -42,5 +50,3 @@ class Level extends BaseCommand {
         return;
     }
 }
-
-module.exports = new Level();

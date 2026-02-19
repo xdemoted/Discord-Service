@@ -5,10 +5,22 @@ import MongoHandler from "src/enforcer/handlers/MongoHandler";
 import UserHandler from "src/enforcer/handlers/UserHandler";
 import GeneralUtils from "src/general/utils/GeneralUtils";
 import { UserRating } from "src/general/classes/api/mongodb/User";
+import { Singleton } from "src/container/Singleton";
 
-class Mommy extends BaseCommand {
+@Singleton
+export class Mommy extends BaseCommand {
+    private main: Main;
+    private mongoHandler: MongoHandler;
+    private userHandler: UserHandler;
+
+    public constructor(main: Main, mongoHandler: MongoHandler, userHandler: UserHandler) {
+        super();
+        this.main = main;
+        this.mongoHandler = mongoHandler;
+        this.userHandler = userHandler;
+    }
+
     public override deferReply: boolean = false;
-
 
     public getCommand(): RESTPostAPIContextMenuApplicationCommandsJSONBody {
         return new ContextMenuCommandBuilder()
@@ -28,18 +40,18 @@ class Mommy extends BaseCommand {
                 return;
             }
     
-            if (message.author.id === Main.getInstance().getClient().user?.id) {
+            if (message.author.id === this.main.getClient().user?.id) {
                 if (message.embeds.length == 1) {
                     let image = message.embeds[0].image?.url;
                     if (image) {
                         await interaction.deferReply({ephemeral: true});
-                        MongoHandler.getInstance().getWaifuFromURL(image).then(async waifu => {
+                        this.mongoHandler.getWaifuFromURL(image).then(async waifu => {
                             if (!waifu) {
                                 await interaction.editReply({ content: "Could not find waifu in database."});
                                 return;
                             }
     
-                            const user = await UserHandler.getInstance().getUser(interaction.user.id);
+                            const user = await this.userHandler.getUser(interaction.user.id);
                             GeneralUtils.setArray(user.stats.waifus, { id: waifu.id, rating: UserRating.MOMMY }, "id");
     
                             await interaction.editReply({ content: `Waifu has been put into your mommy collection.`});
@@ -49,8 +61,6 @@ class Mommy extends BaseCommand {
                 }
             }
     
-            await interaction.followUp({ content: `**${interaction.user.displayName}** ` + Main.getInstance().getRandom("mommy") + " **(mommy)**" });
+            await interaction.followUp({ content: `**${interaction.user.displayName}** ` + this.main.getRandom("mommy") + " **(mommy)**" });
         }
 }
-
-module.exports = new Mommy();

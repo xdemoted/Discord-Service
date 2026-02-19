@@ -2,25 +2,15 @@ import { Main } from "src/enforcer/Main";
 import { Talos } from "src/talos/Index";
 import MongoConnector from "./handlers/MongoConnector";
 import RedisConnector from "./handlers/RedisConnector";
+import { Singleton } from "src/container/Singleton";
+import { Scope } from "src/container/Scope";
 
-class Index {
-    static instance: Index;
-
-    private constructor() {
-        this.startBots();
-    }
-
-    public async startBots(): Promise<void> {
-        MongoConnector.getInstance();
-        RedisConnector.getInstance();
-        Main.getInstance();
-        Talos.getInstance();
-    }
-
-    static getInstance(): Index {
-        if (!Index.instance) this.instance = new Index();
-        return Index.instance;
+@Singleton
+export class Index {
+    public constructor(scope: Scope) {
+        scope.awaitComplete().then(() => {
+            const enforcer = Scope.getScope("src/enforcer", scope);
+            const talos = Scope.getScope("src/talos", scope);
+        })
     }
 }
-
-Index.getInstance();

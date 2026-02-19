@@ -1,16 +1,9 @@
 import * as fs from 'fs';
+import { Singleton } from 'src/container/Singleton';
 
+@Singleton
 export class FilterService {
     private filterList: string[] = this.getFilteredWords();
-
-    static instance: FilterService;
-
-    public static getInstance(): FilterService {
-        if (!FilterService.instance) {
-            FilterService.instance = new FilterService();
-        }
-        return FilterService.instance;
-    }
 
     private getFilteredWords(): string[] {
         const data = fs.readFileSync('src/resources/filterlist.csv', 'utf-8');

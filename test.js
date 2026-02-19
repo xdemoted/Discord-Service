@@ -1,7 +1,8 @@
+/*
 const fs = require('fs');
 const https = require('https');
 const path = require('path');
-/*
+
 data.forEach(url => {
     let imageUrl = "https://pbs.twimg.com/media/" + url + "?format=jpg&name=4096x4096";
     const fileName = path.basename(url + ".jpg");
@@ -16,7 +17,6 @@ data.forEach(url => {
         console.error('Error downloading:', imageUrl, err.message);
     });
 });
-*/
 const readline = require('readline');
 
 const fileStream = fs.createReadStream('data.json');
@@ -52,3 +52,4 @@ rl.on('line', (line) => {
 rl.on('close', () => {
     console.log('File reading completed.' + i);
 });
+*/

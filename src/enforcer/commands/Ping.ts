@@ -2,8 +2,16 @@ import { ApplicationIntegrationType, InteractionContextType, RESTPostAPIChatInpu
 import BaseCommand from "../../general/classes/BaseCommand";
 import { Main } from "../Main";
 import UserHandler from "../handlers/UserHandler";
+import { Singleton } from "src/container/Singleton";
 
-class Stats extends BaseCommand {
+@Singleton
+export class Ping extends BaseCommand {
+    private userHandler: UserHandler;
+
+    public constructor(userHandler: UserHandler) {
+        super();
+        this.userHandler = userHandler;
+    }
 
     public getCommand(): RESTPostAPIChatInputApplicationCommandsJSONBody {
         return new SlashCommandBuilder()
@@ -24,8 +32,7 @@ class Stats extends BaseCommand {
     }
 
     public async execute(interaction: CommandInteraction): Promise<void> {
-        const main = Main.getInstance();
-        const user = await UserHandler.getInstance().getUser(interaction.user.id);
+        const user = await this.userHandler.getUser(interaction.user.id);
         const command = interaction.options.get('command')?.value as string;
 
         switch (command) {
@@ -59,5 +66,3 @@ class Stats extends BaseCommand {
         // Implementation for time setup
     }
 }
-
-module.exports = new Stats();

@@ -1,11 +1,12 @@
 import redis, { createClient } from 'redis';
 import ProtocolURI from '../classes/ProtocolURI';
+import { Singleton } from 'src/container/Singleton';
 
+@Singleton
 export default class RedisConnector {
-    private static instance: RedisConnector;
     private client?: redis.RedisClientType;
 
-    private constructor() {
+    public constructor() {
         this.connect()
     }
 
@@ -49,12 +50,5 @@ export default class RedisConnector {
     public refreshClient(): void {
         this.client = undefined;
         this.connect();
-    }
-
-    public static getInstance(): RedisConnector {
-        if (!RedisConnector.instance) {
-            RedisConnector.instance = new RedisConnector();
-        }
-        return RedisConnector.instance;
     }
 }

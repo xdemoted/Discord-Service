@@ -12,7 +12,7 @@ export class GenericBot {
     public commandDirectory: string;
     public eventHandler?: EventHandler;
 
-    public constructor(token: string, commandDirectory: string) {
+    public constructor(token: string, commandDirectory: string, eventHandler: EventHandler) {
         console.log(`Begin login for [${commandDirectory}]`);
         this.commandDirectory = commandDirectory;
         this.token = token;
@@ -24,7 +24,7 @@ export class GenericBot {
 
             this.loadCommands();
             this.registerCommands();
-            this.eventHandler = new EventHandler(this);
+            eventHandler.startEventListeners(this);
         });
 
         this.client.login(token);
@@ -110,10 +110,6 @@ export class GenericBot {
 
     getCommands(): BaseCommand[] {
         return this.commands;
-    }
-    
-    public static getInstance(): GenericBot {
-        throw new Error("Get instance method not implemented.");
     }
 
     static getVariables(): Env {
